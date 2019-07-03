@@ -19,7 +19,7 @@ A HSV (**H**ue, **S**aturation, **V**alue) színtér egy henger-koordináta rend
 
 - A **H** a középponti szög. A hengeren körben pirostól indulva, az összes színen át ismét pirosba érve vannak a színek elhelyezve, ezek közül jelöl ki egyet.(elvileg 0-360°-ig, OpenCV-ben 0-179)
 
-![Color spectrum](/pictures/colorpicker.jpg "A színek 0-360°-ig")
+![Color spectrum](/pictures/colorpicker.JPG "A színek 0-360°-ig")
 
 - Az **S** a sugár, gyakorlatilag azt mutatja meg mennyire élénk a szín. (0-255)
 - A **V** paraméter a magasság és a szín világosságát mutatja. (0-255)
