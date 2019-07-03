@@ -3,7 +3,8 @@
 A számítógépes képfeldolgozás során először a számunkra érdekes objektum körvonalait próbáljuk beazonosítani. Ezután a színe, pontos körvonala alapján dolgozzuk fel (pl.: SET kártya párosító: először kártyák beazonosítása körvonallal, és azon belül az alakzatok megkeresése ugyancsak körvonalakkal).
 Ahhoz, hogy megtaláljuk a körvonalat a keresés előtt néhány előfeldolgozó műveletet érdemes végezni (pl.: szín szűrés, elmosás, erózió), ezekről később részletesebben lesz szó.
 A feldolgozás után érdemes valamilyen visszajelzést adni a felhasználónak, hogy a program mit lát, ezért általában az eredeti képre végzett rajzoló műveletek után ki is rajzoljuk a képet.
->kép a pipeline-ról (kép->színszűrés->threshold->blur->erosion->diletion->edge detection->feldolgozás->kirajzolás)
+
+![Image processing pipeline](/pictures/pipeline.jpg "A képfeldolgozás általános folyamata (nem mindegi szükséges az összes elem)")
 
 A projektben legtöbben OpenCV könyvtárat használunk, mivel ez sok nyelven elérhető, ingyenes és kellően funkciógazdag. Persze nem kötelező OpenCV-t használni a projektjeidhez :). <br> A kódreszletek C++ nyelven íródtak, mivel ez az OpenCV könyvtár eredeti nyelve, ez alapján más nyelveken is egyszerűen kitalálható a működés és remélhetőleg már ti is tanultatok (Prog2-ből).
 
@@ -19,7 +20,7 @@ A HSV (**H**ue, **S**aturation, **V**alue) színtér egy henger-koordináta rend
 
 - A **H** a középponti szög. A hengeren körben pirostól indulva, az összes színen át ismét pirosba érve vannak a színek elhelyezve, ezek közül jelöl ki egyet.(elvileg 0-360°-ig, OpenCV-ben 0-179)
 
-![Color spectrum](/pictures/colorpicker.JPG "A színek 0-360°-ig")
+![Color spectrum](/pictures/colorpicker.jpg "A színek 0-360°-ig")
 
 - Az **S** a sugár, gyakorlatilag azt mutatja meg mennyire élénk a szín. (0-255)
 - A **V** paraméter a magasság és a szín világosságát mutatja. (0-255)
@@ -65,7 +66,7 @@ A `Mat` objektum két részből áll:
 - magából a képet leíró mátrixból
 
 Ez azért hasznos, mert így több fejléc is utalhat ugyanarra a mátrixra, akár különböző részeire (ROI = region of interest), így kevesebb memóriát használ.
->kép hogy egyik header a teljes mátrixra, másik egy részére mutat
+![Multiple headers](/pictures/multiheader.jpg "Két header mutathat ugyanarra a mátrixra, vagy egy részére")
 
 A másoló operátorok ezért csaka fejlécet másolják le ténylegesen, magát a nagy mátrixot nem.
 ```c++
@@ -428,7 +429,8 @@ cv::cvtColor(img, hsv, cv::COLOR_BGR2HSV);
 Mat filtered;
 cv::inRange(hsv, Scalar(100,10,25), Scalar(130,255,255), filtered);
 //Eredmény kiralyzolása
-cv::imshow();
+cv::imshow("Color filter",filtered);
+cv::waitKey(0);
 ```
 >kép az eredményről
 
@@ -452,7 +454,7 @@ https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga4ff0f3318642c4f
 #### Canny Edge Detection
 #### Hough Circles
 ## Rajzolás, GUI
-[highgui modul](https://docs.opencv.org/3.4/d0/de2/tutorial_table_of_content_highgui.html)
+[highgui modul](https://docs.opencv.org/3.4/d4/dd5/highgui_8hpp.html)
 
 * miért opencv/cpp-ben van (a leírás, nem a projekt)
 * Áttekintés a képfeldolgozásról (pl.: kép -> threshold -> filter, blur, erosion, diletion -> kontúr keresés)
