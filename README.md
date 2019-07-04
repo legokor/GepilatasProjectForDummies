@@ -59,7 +59,7 @@ A nyomdában használt cián (**c**yan), **m**agenta, citromsárga (**y**ellow),
 
 ## OpenCV obejktumok, függvények
 ### MAT
-[Core modul](https://docs.opencv.org/3.4/da/d47/core_8hpp.html)
+[core modul](https://docs.opencv.org/3.4/da/d47/core_8hpp.html)
 A számítógép a képeket mátrixokban tárolja ("olyan táblázat amiben számok vannak"). Minden pixelhez tartozik egy cella. Ez szürkeárnyalatos képek esetén 1 számot (ez az intenzitás), a fentebb leírt színábrázolási módok esetén 3-4 számot tartalmaz.
 A `Mat` objektum két részből áll: 
 - egy fejlécből, ami meta infokat táról a mátrixról (méret, tárolási mód, mátrix címe), ennek a mérete viszonylag kicsi és fix
@@ -170,7 +170,7 @@ A JPG, JPEG és BMP formátumok mellett sok másikat is támogat.
 Mat img = cv::imread("image.jpg", IMREAD_COLOR);
 ```
 ### Kép kirajzolása
-[Highgui module](https://docs.opencv.org/3.4/d4/dd5/highgui_8hpp.html)
+[highgui module](https://docs.opencv.org/3.4/d4/dd5/highgui_8hpp.html)
 Ahhoz, hogy egy képet ki tudjunk rajzolni először szükségünk van egy ablakra. Ezt az alábbi függvénnyel tudjuk létrehozni:
 ```c++
 void cv::namedWindow(const String& winname, int flags = WINDOW_AUTOSIZE);
@@ -237,6 +237,7 @@ cv::imwrite("gray.jpg", gray_img);
 [Learn more](https://docs.opencv.org/3.4/db/d64/tutorial_load_save_image.html)
 
 ### Képek összeadása
+[modul]
 Két kép összeadására nem csak áttűnéses-felemás képek készítése esetén van szükség. Több szűrés eredményét például így  tudjuk egy képre összegezni (pl.: a piros színre szűrésnél a két tartományt összevonni). Erre ad lehetőséget a `cv::addWeighted` függvény, amiben súlyt is rendelhetünk a tagokhoz. Az eredmény kiszámolása pixelenként az alábbi módon történik:
 `dst = src1 * alpha + src2 * beta + gamma`
 ```c++
@@ -437,23 +438,91 @@ cv::waitKey(0);
 [Learn more](https://docs.opencv.org/3.4/da/d97/tutorial_threshold_inRange.html)
 
 ### Morfológiai transzformációk
+A morfológiai transzformációk az alakzatok formájára vannak hatással. Valamilyen struktúráló elemet kombinálnak halmazműveletekkel, az eredmény kiszámítása során. Használhatóak zajcsökkentésre, alakzatok elkülönítésére, intenzitás csúcsok és lyukak megtalálására. Bináris képeken (fekete-fehér) szoktuk őket alkalmazni.
+#### Dilation
+A művelet során egy tetszőleges méretű és alakú kernellel (általában négyzet, vagy kör) végig megyünk a képen (itt ez a struktúráló elem). Az anchor pointot minden pixelre helyezve megkeressük a kernel által fedett területen a maximális pixelintenzitást, és azzal helyettesítjük az anchor point-ban lévő pixelt. Ez azt eredményezi, hogy a képen lévő világos területek kitágulnak.
+Az OpenCV természetesn biztosít hozzá függvényt:
+```c++
+void cv::dilate(InputArray src, OutputArray dst, InputArray kernel, Point anchor = Point(-1,-1), int iterations = 1, int borderType = BORDER_CONSTANT, const Scalar& borderValue = morphologyDefaultBorderValue()); 
+```
+- **src**: bemeneti kép, akármennyi csatornája lehet (ezeket egymástól függetlenül dolgozza fel), mélysége (depth) ezek valamelyike lehet: `CV_8U`, `CV_16U`, `CV_16S`, `CV_32F` or `CV_64F`
+- **dst**: kimeneti kép, ugyanolyan méretű és típusú kell legyen, mint a bemeneti
+- **kernel**: a struktúráló elem, amit a dilation-höz használ, a [getStructuringElement](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gac342a1bb6eabf6f55c803b09268e36dc) segítségével kérhető le. Ha `Mat()`, akkor egy 3x3 négyzetet használ.
+- **anchor**: a kernel melyik pontjában legyen az anchor, alapértelmezetten a közepe
+- **iterations**: hányszor iteráljon végig a képen
+- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/ group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
+- **borderValue**: konstans határ esetén annak az értéke
+
+[További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga4ff0f3318642c4f469d0e11f242f3b6c)
+```c++
+//Kép beolvasása
+Mat img = cv::imread("image.jpg", IMREAD_GRAYSCALE);
+//Hely előkészítése és struktúráló lekérése
+Mat dst;
+Mat element = getStructuringElement(MORPH_RECT, Size(5,5));
+dilate(src, dst, element);
+//Eredmény kiralyzolása
+cv::imshow("Erosion", dst);
+cv::waitKey(0);
+```
+>KÉP AZ EREDMÉNYRŐL
 
 #### Erosion
-https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gaeb1e0c1033e3f6b891a25d0511362aeb
-#### Diletion
-https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga4ff0f3318642c4f469d0e11f242f3b6c
-[További](https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html)
+A dilation-höz hasonló, lényegében annak az ellentéte. Ugyan úgy működik, viszont maximum helyett a kernel által fedett terület minimumát választja az anchor point új értékének. Ezzel elvékonyítja a világos területek a képen.
+```c++
+void cv::erode  (InputArray src, OutputArray dst, InputArray kernel, Point anchor = Point(-1,-1), int iterations = 1, int borderType = BORDER_CONSTANT, const Scalar& borderValue = morphologyDefaultBorderValue()); 
+```
+- **src**: bemeneti kép, akármennyi csatornája lehet (ezeket egymástól függetlenül dolgozza fel), mélysége (depth) ezek valamelyike lehet: `CV_8U`, `CV_16U`, `CV_16S`, `CV_32F` or `CV_64F`
+- **dst**: kimeneti kép, ugyanolyan méretű és típusú kell legyen, mint a bemeneti
+- **kernel**: a struktúráló elem, amit az erosion-höz használ, a [getStructuringElement](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gac342a1bb6eabf6f55c803b09268e36dc) segítségével kérhető le. Ha `Mat()`, akkor egy 3x3 négyzetet használ.
+- **anchor**: a kernel melyik pontjában legyen az anchor, alapértelmezetten a közepe
+- **iterations**: hányszor iteráljon végig a képen
+- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/ group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
+- **borderValue**: konstans határ esetén annak az értéke
+[További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gaeb1e0c1033e3f6b891a25d0511362aeb)
+
+```c++
+//Kép beolvasása
+Mat img = cv::imread("image.jpg", IMREAD_GRAYSCALE);
+//Hely előkészítése és struktúráló lekérése
+Mat dst;
+Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5,5));
+erode(src, dst, element);
+//Eredmény kiralyzolása
+cv::imshow("Erosion", dst);
+cv::waitKey(0);
+```
+>KÉP AZ EREDMÉNYRŐL
+[Learn more](https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html)
+
+Ennek a két morfológiai művelet kombinálásával további összetett műveletek végezhetők el, melyekhez ugyancsak beépített támogatást nyújt az OpenCV. Ezeket már 1 függvénnyel végezhetjük el, paraméterrel jelölve a konkrét műveletet.
+```c++
+void cv::morphologyEx (InputArray src, OutputArray dst, int op, InputArray kernel, Point anchor = Point(-1,-1), int iterations = 1, int borderType = BORDER_CONSTANT, const Scalar& borderValue = MorphologyDefaultBorderValue());
+```
+
+
 #### Opening
+
 #### Closing
+#### Morphological Gradient
 [További](https://docs.opencv.org/3.4/d3/dbe/tutorial_opening_closing_hats.html)
-#### 
-### Blur
+
+### Kép simítás
+#### Blur
+#### Median Blur
+#### Gaussian Blur
+#### Bilateral Filter
 [További](https://docs.opencv.org/3.4/dc/dd3/tutorial_gausian_median_blur_bilateral_filter.html)
 ### Élkeresés
 #### Findcontours
-#### Canny Edge Detection
 #### Hough Circles
+#### Hough Line
+#### Canny Edge Detection
 ## Rajzolás, GUI
+### Alacsony szintű rajzolás
+[imgproc modul]()
+[Learn more](https://docs.opencv.org/3.4/d3/d96/tutorial_basic_geometric_drawing.html)
+### GUI elemek
 [highgui modul](https://docs.opencv.org/3.4/d4/dd5/highgui_8hpp.html)
 
 * miért opencv/cpp-ben van (a leírás, nem a projekt)
