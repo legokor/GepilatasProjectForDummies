@@ -40,7 +40,7 @@ Ez leginkább fotószerkesztésből lehet ismerős, a fehér egyensúlyt lehet i
 
 ![LAB Color space](/pictures/LAB_colorspace.gif "A CIELAB színtér")
 
-### YCrCB
+### YCrCb
 
 - Az **Y** (aposztróf nélkül, létezik Y'CrCb tér is) a fényességet jelzi (Luma, luminance). Ezt RGB-ből, gamma-korrekcóval állítják elő
 - A **Cr** a piros Luma-tól való távolságát adja meg (Cr=R-Y)
