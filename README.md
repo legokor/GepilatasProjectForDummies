@@ -13,19 +13,19 @@ A különböző színterek más-más logika mentén ábrázolják a színeket, �
 
 ### BGR
 Lényegében ugyan az, mint a közismert RGB, csak más sorrendben vannak a csatornák. *Alapértelmezetten ilyen formában olvassa be az OpenCV a képet.* A színeket 0-255-ig terjedő skálán kék (**B**lue), zöld (**G**reen) és piros (**R**ed)csatornákra bontva ábrázolja. Egyes esetekben egy A csatorna is tartozhat hozzá, ami az átlátszóságot jelenti.
-![BGR Color space](/pictures/RGB_colorspace.jpg "A BGR színtér")
+![BGR Color space](/pictures/colorspace/RGB_colorspace.jpg "A BGR színtér")
 
 ### HSV
 A HSV (**H**ue, **S**aturation, **V**alue) színtér egy henger-koordináta rendszerrel ábrázolja a színeket. 
 
 - A **H** a középponti szög. A hengeren körben pirostól indulva, az összes színen át ismét pirosba érve vannak a színek elhelyezve, ezek közül jelöl ki egyet.(elvileg 0-360°-ig, OpenCV-ben 0-179)
 
-![Color spectrum](/pictures/colorspectrum.jpg "A színek 0-360°-ig")
+![Color spectrum](/pictures/colorspace/colorspectrum.jpg "A színek 0-360°-ig")
 
 - Az **S** a sugár, gyakorlatilag azt mutatja meg mennyire élénk a szín. (0-255)
 - A **V** paraméter a magasság és a szín világosságát mutatja. (0-255)
 
-![HSV Color space](/pictures/HSV_colorspace.jpg "A HSV színtér")
+![HSV Color space](/pictures/colorspace/HSV_colorspace.jpg "A HSV színtér")
 
 Mivel ez a színtér egy értéken ábrázolja azt, hogy az adott pixel ténylegesen milyen színű (zöld, narancssárga), ezért ebben a színtérben rendkívül egyszerű a szín szűrés, átszínezés.
 
@@ -38,7 +38,7 @@ A LAB (**L**ightness , **a**, **b**) színtér is 3 komponensből áll, viszont 
 
 Ez leginkább fotószerkesztésből lehet ismerős, a fehér egyensúlyt lehet ilyen skálán állítani. Előnye, hogy készülékfüggetlen (mindegy milyen érzékelővel érzékeltük a fényt és milyen kijelzőn jelenítjük meg, ugyan úgy néz ki).
 
-![LAB Color space](/pictures/LAB_colorspace.gif "A CIELAB színtér")
+![LAB Color space](/pictures/colorspace/LAB_colorspace.gif "A CIELAB színtér")
 
 ### YCrCb
 
@@ -48,7 +48,7 @@ Ez leginkább fotószerkesztésből lehet ismerős, a fehér egyensúlyt lehet i
 
 TV adásnál és a JPEG formátumnál alkalmazzák tömörítéshez. Készülékfüggő.
 
-![YCrCb Color space](/pictures/YCbCr_colorspace.gif "Az YCrCb színtér")
+![YCrCb Color space](/pictures/colorspace/YCbCr_colorspace.gif "Az YCrCb színtér")
 
 ### CMYK
 A nyomdában használt cián (**c**yan), **m**agenta, citromsárga (**y**ellow), és fekete (blac**k**) színekre bontva írja le az adott színt. Mi nem igazán használjuk, de a teljesség kedvéért megemlítettem.
@@ -58,7 +58,37 @@ A nyomdában használt cián (**c**yan), **m**agenta, citromsárga (**y**ellow),
 ---
 
 ## OpenCV obejktumok, függvények
-### MAT
+Az OpenCV az egyes fügvényeket illetve osztályokat funkció szerint külön modulokban tárolja. Ebből egészen sok van, funkciójuk a képfeldolgozás, képmanipulálástól kezdve a mély neurális hálókig és gépi tanulásig egyéb bonyolultabb dolgokig terjed. Az alábbiakban az (általunk) leggyakrabban használt, alap modulok függvényeiről, osztályairól lesz szó:
+- **core:** alapvető struktúrák és osztályok
+- **imgcodecs:** a különböző formátumok beolvasásához, illetve a nagyon egyszerű előfeldolgozó műveletekhez tartozó függvények (pl.: két kép összeadása)
+- **imgproc:** képfeldolgozó műveletek
+- **highgui:** magas szintű GUI eszközök (pl.: Trackbar, esemény kezelés)
+
+[További modulok](https://docs.opencv.org/3.4/modules.html)
+
+### Alapvető tárolók
+
+#### Point
+Egy 2D pontot reprezentál, `x` és `y` koordinátákkal. Az alábbi módokon definiálható:
+```c++
+Point pt;
+pt.x = 10;
+pt.z = 8;
+```
+```c++
+Point pt = Point(10, 8)
+```
+A Point [ennek a template-nek](https://docs.opencv.org/3.4/db/d4e/classcv_1_1Point__.html) \<int\> paraméterrel typedefelve.
+
+#### Scalar
+Egy 4 elemű vektort reprezentál (és igen, skalár a neve...), de ennél kevesebbel is példányosítható. Gyakran használjuk a pixel értékek átadására.
+```c++
+Scalar(5, 6, 7);
+```
+
+A Scalar [ennek a template-nek](https://docs.opencv.org/3.4/d1/da0/classcv_1_1Scalar__.html) \<double\> paraméterrel typedefelve.
+
+#### MAT
 [core modul](https://docs.opencv.org/3.4/da/d47/core_8hpp.html)
 A számítógép a képeket mátrixokban tárolja ("olyan táblázat amiben számok vannak"). Minden pixelhez tartozik egy cella. Ez szürkeárnyalatos képek esetén 1 számot (ez az intenzitás), a fentebb leírt színábrázolási módok esetén 3-4 számot tartalmaz.
 A `Mat` objektum két részből áll: 
@@ -89,7 +119,14 @@ Mat cv::Mat::clone() const;
 ```c++
 void cv::Mat::copyTo(OutputArray m) const;
 ```
-- **m**: cél objektum ahova a másolatot létrehozza. Ha volt benne már mátrix, akkor azt újra allokálja.
+- **m**: cél objektum ahova a másolatot létrehozza. Ha volt benne már mátrix, akkor azt újra allokálja. *
+
+Két paraméteres változat:
+```c++
+void cv::Mat::copyTo(OutputArray m, InputArray mask) const;
+```
+- **m**: ugyan az
+- **mask**: CV_8U, egy vagy többcsatornás kép, **m**-el megegysező méretű. A másolás csak ennek a nem nulla elemeinél történik meg m-be
 
 [További info](https://docs.opencv.org/3.4/d3/d63/classcv_1_1Mat.html#a33fd5d125b4c302b0c9aa86980791a77)
 
@@ -450,7 +487,7 @@ void cv::dilate(InputArray src, OutputArray dst, InputArray kernel, Point anchor
 - **kernel**: a struktúráló elem, amit a dilation-höz használ, a [getStructuringElement](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gac342a1bb6eabf6f55c803b09268e36dc) segítségével kérhető le. Ha `Mat()`, akkor egy 3x3 négyzetet használ.
 - **anchor**: a kernel melyik pontjában legyen az anchor, alapértelmezetten a közepe
 - **iterations**: hányszor iteráljon végig a képen
-- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/ group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
+- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
 - **borderValue**: konstans határ esetén annak az értéke
 
 [További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga4ff0f3318642c4f469d0e11f242f3b6c)
@@ -477,7 +514,7 @@ void cv::erode  (InputArray src, OutputArray dst, InputArray kernel, Point ancho
 - **kernel**: a struktúráló elem, amit az erosion-höz használ, a [getStructuringElement](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gac342a1bb6eabf6f55c803b09268e36dc) segítségével kérhető le. Ha `Mat()`, akkor egy 3x3 négyzetet használ.
 - **anchor**: a kernel melyik pontjában legyen az anchor, alapértelmezetten a közepe
 - **iterations**: hányszor iteráljon végig a képen
-- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/ group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
+- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
 - **borderValue**: konstans határ esetén annak az értéke
 [További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gaeb1e0c1033e3f6b891a25d0511362aeb)
 
@@ -493,53 +530,293 @@ cv::imshow("Erosion", dst);
 cv::waitKey(0);
 ```
 >KÉP AZ EREDMÉNYRŐL
+
 [Learn more](https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html)
 
 Ennek a két morfológiai művelet kombinálásával további összetett műveletek végezhetők el, melyekhez ugyancsak beépített támogatást nyújt az OpenCV. Ezeket már 1 függvénnyel végezhetjük el, paraméterrel jelölve a konkrét műveletet.
 ```c++
 void cv::morphologyEx (InputArray src, OutputArray dst, int op, InputArray kernel, Point anchor = Point(-1,-1), int iterations = 1, int borderType = BORDER_CONSTANT, const Scalar& borderValue = MorphologyDefaultBorderValue());
 ```
+- **src**: bemeneti kép, akármennyi csatornája lehet (ezeket egymástól függetlenül dolgozza fel), mélysége (depth) ezek valamelyike lehet: `CV_8U`, `CV_16U`, `CV_16S`, `CV_32F` or `CV_64F`
+- **dst**: kimeneti kép, ugyanolyan méretű és típusú kell legyen, mint a bemeneti
+- **op**: a végrehajtandó összetett művelet, [ezek közül](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga7be549266bad7b2e6a04db49827f9f32) lehet választani
+- **kernel**: a struktúráló elem, amit az erosion-höz használ, a [getStructuringElement](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gac342a1bb6eabf6f55c803b09268e36dc) segítségével kérhető le. Ha `Mat()`, akkor egy 3x3 négyzetet használ.
+- **anchor**: a kernel melyik pontjában legyen az anchor, alapértelmezetten a közepe
+- **iterations**: hányszor iteráljon végig a képen
+- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
+- **borderValue**: konstans határ esetén annak az értéke
 
+```c++
+PÉLDA KÓD
+```
+
+[További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga67493776e3ad1a3df63883829375201f)
 
 #### Opening
+Egy képre erosion és dilation egymás utáni alkalmazása. Hasznos, hogy a kis objektumokat eltüntesse a képről (általában fekete hátteren fehér objektumok létrehozására törekszünk).
 
+  $dst = dilation(erosion(src, kernel))$
+
+![Opening](/pictures/morphology/opening.jpg "Az opening hatása")
 #### Closing
+Az opening fordítottja, először a dilation-t hajtja végre, utána az erosion-t. Kicsi lyukak eltávolítására használjuk (fekete pöttyök).
+
+$dst = erosion(dilation(src, kernel))$
+
+![Erosion](/pictures/morphology/closing.jpg "A closing hatása")
 #### Morphological Gradient
-[További](https://docs.opencv.org/3.4/d3/dbe/tutorial_opening_closing_hats.html)
+A dilation és erosion különbsége. Alakzatok körvonalát (outline) lehet vele meghatározni.
+
+$dst = dilation(src, kernel) - erosion(src, kernel)$
+
+![Gradient](/pictures/morphology/gradient.jpg "A morphological gradient hatása")
+[Learn more](https://docs.opencv.org/3.4/d3/dbe/tutorial_opening_closing_hats.html)
 
 ### Kép simítás
-#### Blur
-#### Median Blur
+A simítást (smoothing) vagy elmosást (blur) leginkább zaj eltávolítására használjuk (ha úgy tetszik a nagyfrekvenciás zajt szűri ki a képről). Ehhez (szokás szerint) egy kernellel végigmászunk a kép összes pixelén, ami a környezetben lévő pixelek súlyát tartalmazza. Az ilyen súlyozott átlagot képző szűrpket nevezzük *lineáris szűrőknek*. Az alapján, hogy a kernelbe a súlyokat hogyan határozzuk meg, többféle szűrőt különböztetünk meg.
+#### Normalizált doboz szűrő
+(normalized box filter)
+A legegyszerűbb szűrő, a számtani közepét veszi a környező pixeleknek (a kernelben az összes pixel súlya.
+
+$K = {1\over K_{width} \cdot K_{height}}
+    \begin{bmatrix}
+    1 & 1 & ... & 1\\
+    1 & 1 & ... & 1\\
+    . & . & ... & .\\
+    1 & 1 & ... & 1
+    \end{bmatrix}
+$
+
+Az OpenCV rendelkezik ehhez beépített függvénnyel:
+```c++
+void cv::blur(InputArray src, OutputArray dst, Size ksize, Point anchor = Point(-1,-1), int borderType = BORDER_DEFAULT);
+```
+- **src**: bemeneti kép, akármennyi csatornája lehet (ezeket egymástól függetlenül dolgozza fel), mélysége (depth) ezek valamelyike lehet: `CV_8U`, `CV_16U`, `CV_16S`, `CV_32F` or `CV_64F`
+- **dst**: kimeneti kép, ugyanolyan méretű és típusú kell legyen, mint a bemeneti
+- **ksize**: a kernel mérete
+- **anchor**: a kernel pontja, amit minden pixelre illeszt (alapértelmezetten a közepe)
+- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
+[További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga8c45db9afe636703801b0b2e440fce37)
+
+```c++
+PÉLDA KÓD
+```
+
+>KÉP AZ EREDMÉNYRŐL
+
+#### Medián szűrő
+A pixelt a kernel által meghatározott környezetében lévő pixelértékek mediánjára cseréli le.
+Az OpenCV függvénye:
+```c++
+void cv::medianBlur(InputArray src, OutputArray dst, int ksize);
+```
+- **src**: bemeneti kép, akármennyi csatornája lehet (ezeket egymástól függetlenül dolgozza fel), mélysége (depth) ezek valamelyike lehet: `CV_8U`, `CV_16U`, `CV_16S`, `CV_32F` or `CV_64F`
+- **dst**: kimeneti kép, ugyanolyan méretű és típusú kell legyen, mint a bemeneti
+- **ksize**: a kernel mérete
+- a kép szélénél a `BORDER_REPLICATE` extrapolációt használja ([BorderTypes](https://docs.opencv.org/3.4/d2/de8/group__core__array.html#ga209f2f4869e304c82d07739337eae7c5))
+[További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga564869aa33e58769b4469101aac458f9)
+
+```c++
+PÉLDA KÓD
+```
+
+>KÉP AZ EREDMÉNYRŐL
+
 #### Gaussian Blur
+Talán a leghasznosabb szűrő, viszont lassabb. A kernel értékeit Gauss-eloszlás szerint töltik ki (a közepén a legnagyobb a súlyozás, a széle felé pedig egyre jobban lecsökken). Ezt mutatja az alábbi két ábra, egy 1D-s és egy 2D-s Gauss-eloszlás ábrázolása (függőleges tengelyen a súlyok):
+
+![1D Gauss distribution](/pictures/morphology/1d_gauss.png "1D-s Gauss-eloszlás")![2D Gauss distribution](/pictures/morphology/2d_gauss.png "2D-s Gauss-eloszlás")
+
+OpenCV függvény:
+```c++
+void cv::GaussianBlur(InputArray src, OutputArray dst, Size ksize, double, sigmaX, double sigmaY = 0, int borderType = BORDER_DEFAULT);
+```
+- **src**: bemeneti kép, akármennyi csatornája lehet (ezeket egymástól függetlenül dolgozza fel), mélysége (depth) ezek valamelyike lehet: `CV_8U`, `CV_16U`, `CV_16S`, `CV_32F` or `CV_64F`
+- **dst**: kimeneti kép, ugyanolyan méretű és típusú kell legyen, mint a bemeneti
+- **ksize**: a kernel mérete, a szélesség és magasság eltérhet, de pozitív páratlan számoknak kell lennie. Vagy ha nullák, akkor a sigma-ból számolódik
+- **sigmaX**: a Gauss-eloszlás szórása X irányba
+- **sigmaY**: a Gauss-eloszlás szórása Y irányba. Ha 0, akkor sigmaX-ből számolódik. Ha mindkettő 0, akkor a ksize alapján ([részletek](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa)).
+- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
+[További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#gaabe8c836e97159a9193fb0b11ac52cf1)
+
+```c++
+PÉLDA KÓD
+```
+
+>KÉP AZ EREDMÉNYRŐL
+
 #### Bilateral Filter
-[További](https://docs.opencv.org/3.4/dc/dd3/tutorial_gausian_median_blur_bilateral_filter.html)
-### Élkeresés
-#### Findcontours
-#### Hough Circles
-#### Hough Line
+Az eddigi szűrők a kép simítás során nem csak a zajt távolítják el a képről, de az eléket is ezzel együtt elmossák. Ezt egy bizonyos szintig csökkenthetjük ezzel a szűrővel.
+A súlyozás jelen esetben 2 részletből ál. Az első komponens ugyan az, mint a Gauss-szűrő esetében. A második figyelembe veszi az intenzitás beli különbséget a vizsgált és a szomszédos pixel között. ([Bővebben](http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/MANDUCHI1/Bilateral_Filtering.html))
+
+OpenCV függvény:
+```c++
+void cv::GaussianBlur(InputArray src, OutputArray dst, int d, double sigmaColor, double sigmaSpace = 0, int borderType = BORDER_DEFAULT);
+```
+- **src**: bemeneti kép, akármennyi csatornája lehet (ezeket egymástól függetlenül dolgozza fel), mélysége (depth) ezek valamelyike lehet: `CV_8U`, `CV_16U`, `CV_16S`, `CV_32F` or `CV_64F`
+- **dst**: kimeneti kép, ugyanolyan méretű és típusú kell legyen, mint a bemeneti
+- **d**: a kernel átmérője, ha nem pozitív, akkor a sigmaSpace-ből számolódik
+>A nagy szűrők (d>5) nagyon lassúak, ezért kb real-time alkalmazáshoz 5, offline alkalmazáshoz 9 az ajánlott érték (ahol erős szűrés kell)
+
+- **sigmaColor**: nagyobb értéke azt eredményezi, hogy a (színtérben) távolabbi színek a pixel környezetéből össze mosódnak, ezáltal nagyobb kb azonos színű területeket eredményezve
+- **sigmaSpace**: nagyobb értéke azt jelenti, hogy a messzebbi pixelek befolyásolják egymást, amég a színük elég közel van egymáshoz (->sigmaColor)
+>Az egyszerűség kedvéért a 2 szigma érték egyenlő lehet. Ha alacsonyak (<10), akkor a szűrőnek ekvésbé lesz erőteljes hatása, ha nagyok (>150), akkor viszont igen, a kép "rajzfilmszerűen" fog kinézni
+
+- **borderType**: pixel extrapoláció módja, [részletek itt](https://docs.opencv.org/3.4/d2/de8/group__core__array.html#ga209f2f4869e304c82d07739337eae7c5) (a kép széléről lelógó kernelt hogyan kezelje)
+[További info](https://docs.opencv.org/3.4/d4/d86/group__imgproc__filter.html#ga9d7064d478c95d60003cf839430737ed)
+
+```c++
+PÉLDA KÓD
+```
+
+>KÉP AZ EREDMÉNYRŐL
+
+[Learn more](https://docs.opencv.org/3.4/dc/dd3/tutorial_gausian_median_blur_bilateral_filter.html)
+
+### Él- és körvonal keresés
+[imgproc modul](https://docs.opencv.org/3.4/dd/d1a/group__imgproc__feature.html)
+
+
 #### Canny Edge Detection
+######(John F. Canny, 1986)
+Optimális felismerőként is ismert. Három kritériumot próbál teljesíteni:
+- csak tényleg létező éleket találjon meg (alacsony hiba arány)
+- az észlelt él és valós él pixeleinek a távolsága minimális legyen (jó lokalizáció)
+- egy élre csak egyszer jelezzen
+
+##### Lépések:
+1. zaj szűrés Gauss-szűrővel
+2. A kép intenzitás gradiensének kiszámolása ([Sobel operátor](https://en.wikipedia.org/wiki/Sobel_operator))
+3. Nem-maximum elnyomás: eltávolítja azokat a pixeleket amik nem az él részei, vékonyabb vonalakat eredményezve
+4. Hiszterézis:
+  a) Ha a pixel gradiens magasabb a felső határnál: elfogadjuk élként
+  b) Ha a pixel gradiens alacsonyabb az alsó határnál: visszautasítjuk
+  c) Ha a kettő között van: csak akkor fogadjuk el ha valamelyik szomszédját elfogadtuk. Canny 2:1 és 3:1 közötti arányt javasolt határoknak
+
+```c++
+void cv::Canny(InputArray image, OutputArray edges, double threshold1, double  threshold2, int apertureSize = 3, bool L2gradient = false);
+```
+- **image:** 8 bites kép
+- **edges:** egy csatornás 8 bites kép, ami tartalmazza az éleket
+- **threshold1:** az egyik threshold a hiszterézishez
+- **threshold2:** a másik threshold a hiszterézishez
+- **apertureSize:** a gradiens számító kernel mérete
+- **L2gradient:** flag annak a jelzésére, hogy kell-e a pontosabb gradiens számolás
+
+[További info](https://docs.opencv.org/3.4/dd/d1a/group__imgproc__feature.html#ga04723e007ed888ddf11d9ba04e2232de)
+
+```c++
+PÉLDA KÓD
+```
+
+[Learn more](https://docs.opencv.org/3.4/da/d5c/tutorial_canny_detector.html)
+
+#### Hough Line
+Ez a transzformáció egyenes vonalak detektálására használható. Ahhoz, hogy alkalmazni tudjuk előtte egy élkeresést érdemes elvégezni.
+##### Működése:
+Általánosan egy egyenest a  `y = a * x + b` egyenlettel adhatunk meg. Ezt polár koordináta rendszerben felírva az alább egyenlet jön ki:
+
+![Polar-coordinate line](/figures/polar_line.jpg "Egy egyenes ábrázolása polár koordináta rendszerben, normálvektor segítségével")
+
+$y = -\frac{cos(\theta)}{sin(\theta)} \cdot x +  \frac{r}{sin(\theta)}$
+
+Ahol theta az egyenes normálvektora és az x tengely által bezárt szög, r pedig az egyenes távolsága az origótól.
+
+Ezt rendezhetjük a $r = x \cdot cos(\theta) + y \cdot sin(\theta)$ alakra
+
+  1. Általánosságban az $(x_0;y_0)$ ponton átmenő egyenesek a
+  $r = x_0 \cdot cos(\theta) + y_0 \cdot sin(\theta)$
+  egyenlettel írhatók le, ahol minden egyes $(r;\theta)$ pár egy konkrét egyenes.
+  2. Tehát az 1 ponton átmenő egyenesek theta és r értékét egy szinuszfüggvényként ábrázolhatjuk:
+  ![Line sinusoid](/figures/line_sinusoid.jpg "Egy ponton átmenő egyenesek theta-r párosainak ábrázolása")
+  Ennek a függvényne tehát minden pontja 1 egyenest jelent.
+  3. Hogyha ezt a kép több pontjára is elvégezzük, és a kapott függvényeket ábrázoljuk, akkor az alábbi képet kapjuk:
+  ![Multiple polar-coordinate line](/figures/multiple_line_sinusoid.jpg "Több különböző képponton átmenő egyenesek")
+  A különböző függvények tehát a különböző pontokon átmenő theta-r párosok. Ahol ezek metszik egymást, az azzal a theta-r párral leírható egyenes mind a két ponton átmegy. Tehát minél több ilyen metszés van, annál valószínűbb, hogy az a theta-r pár tényleg egy létező egyenes.
+
+A HoughLine tehát nyilvántartja, hogy egy theta-r értéknél hány pont esetében volt metszés, és ha az egy beállított `threshold`-ot meghalad, akkor egy képen szereplő egyenesnek tekinti.
+*Persze ha ezt az összes pontra így elvégeznénk mindenhol egyenest találna. Ezért van szükség előtte az élkeresésre, mivel annak a bináris kép kimenete lesz a HoughLines bemenete, így az csak a fehér képpontokra végzi el a kiértékelést, ahol az élek vannak.*
+
+##### OpenCV függvény:
+
+```c++
+void cv::HoughLines( InputArray image, OutputArray lines, double rho, double theta, int threshold, double srn = 0, double stn = 0, double min_theta = 0, double max_theta = V_PI);
+```
+- **image:** 8-bites, egy csatornás bináris kép. Módosulhat a futás során
+- **lines:** A megtalált vonalak. Minden vonál 2 vagy 3 elemű vektor: `(r,theta)`, vagy `(r, theta, votes)`
+    + r: az origótól (bal felső sarok, (0,0)) való távolság
+    + theta: egyenes x-tengellyel bezárt szöge (0~függőleges - pi/2~vízszintes)
+    + votes: hány képpontban megy ott át egyenes
+- **rho:** r felbontása pixelben
+- **theta:** theta felbontása radiánban
+- **threshold:** a minimális szavazatok száma, ahhoz, hogy egyenesnek tekintse
+- **srn:** több skálájú Hough transzformáció esetén az `rho` osztója
+- **stn:** több skálájú Hough transzformáció esetén az `theta` osztója
+    + ha `srn`˙és `stn` is 0 akkor a klasszikus Hough transzformációt végzi, egyébként pedig pozitívnak kell lennie
+- **min_theta:** a keresett egyenesek minimális x tengellyel bezárt szöge. 0 és `max_theta` közé kell essen
+- **max_theta:** a keresett egyenesek maximális x tengellyel bezárt szöge. `max_theta` és `CV_PI` közé kell essen
+
+[Valószínőség alapú Hough line transzformáció](https://docs.opencv.org/3.4/dd/d1a/group__imgproc__feature.html#ga8618180a5948286384e3b7ca02f6feeb)
+```c++
+PÉLDA KÓD
+```
+>KÉP AZ EREDMÉNYRŐL
+
+[Learn more](https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html)
+
+#### Hough Circles
+
+
+
+[Learn more](https://docs.opencv.org/3.4/d4/d70/tutorial_hough_circle.html)
+#### Find Contours
+[További info](https://docs.opencv.org/3.4/d3/dc0/group__imgproc__shape.html#ga17ed9f5d79ae97bd4c7cf18403e1689a)
+[Learn more](https://docs.opencv.org/3.4/df/d0d/tutorial_find_contours.html)
 ## Rajzolás, GUI
 ### Alacsony szintű rajzolás
-[imgproc modul]()
+[imgproc modul](https://docs.opencv.org/3.4/dd/d1a/group__imgproc__feature.html)
+#### Vonal
+[További info](https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html#ga7078a9fae8c7e7d13d24dac2520ae4a2)
+#### Elipszis
+[További info](https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html#ga28b2267d35786f5f890ca167236cbc69)
+#### Téglalap
+[További info](https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html#ga07d2f74cadcf8e305e810ce8eed13bc9)
+#### Kör
+[További info](https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html#gaf10604b069374903dbd0f0488cb43670)
+#### Kitöltött sokszog
+[További info](https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html#gaf30888828337aa4c6b56782b5dfbd4b7)
+
 [Learn more](https://docs.opencv.org/3.4/d3/d96/tutorial_basic_geometric_drawing.html)
+#### Draw contours
+[További info](https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html#ga746c0625f1781f1ffc9056259103edbc)
+[Learn more](https://docs.opencv.org/3.4/df/d0d/tutorial_find_contours.html)
 ### GUI elemek
 [highgui modul](https://docs.opencv.org/3.4/d4/dd5/highgui_8hpp.html)
+#### Trackbar
+[További info](https://docs.opencv.org/3.4/d7/dfc/group__highgui.html#gaf78d2155d30b728fc413803745b67a9b)
 
-* miért opencv/cpp-ben van (a leírás, nem a projekt)
-* Áttekintés a képfeldolgozásról (pl.: kép -> threshold -> filter, blur, erosion, diletion -> kontúr keresés)
+##### Minimum beállítása
+[További info](https://docs.opencv.org/3.4/d7/dfc/group__highgui.html#ga67d73c4c9430f13481fd58410d01bd8d)
+##### Maximum beállítása
+[További info](https://docs.opencv.org/3.4/d7/dfc/group__highgui.html#ga7e5437ccba37f1154b65210902fc4480)
+##### Pozíció lekérdezés
+[További info](https://docs.opencv.org/3.4/d7/dfc/group__highgui.html#ga122632e9e91b9ec06943472c55d9cda8)
+##### Pozíció beállítás
+[További info](https://docs.opencv.org/3.4/d7/dfc/group__highgui.html#ga67d73c4c9430f13481fd58410d01bd8d)
 
-* Cpp-ben (elvileg ezt tanulták/tanulják már, ez alapján meg lehet találni más nyelvben)
-* Mat object
-* Conversion fv-k
-* filterek, blur-ok, egyéb feldolgozást segítő fv-k
-* kontúr/körkereső függvények
-* néhány rajzoló fv
-* képekkel, kódrészletekkel
-* Git repo-ba feltölteni a tutorial anyagokat?
+[Learn more](https://docs.opencv.org/3.4/da/d6a/tutorial_trackbar.html)
+#### Egér kezelés
+
+[Learn more](http://opencvexamples.blogspot.com/2014/01/detect-mouse-clicks-and-moves-on-image.html)
+
+
+[Még több tutorial](https://docs.opencv.org/3.4/d9/df8/tutorial_root.html)
+
 
 
 https://markdownlivepreview.com/
 https://github.com/adam-p/markdown-here/wiki/Markdown-Here-Cheatsheet
 
-md vagy docx?
-függvények működésébe valamennyire belemászni?
+**TODO: kigyűjteni a linkeket**
+[imgproc modul]:
+[highgui modul]:
