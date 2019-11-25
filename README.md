@@ -817,6 +817,6 @@ PÉLDA KÓD
 https://markdownlivepreview.com/
 https://github.com/adam-p/markdown-here/wiki/Markdown-Here-Cheatsheet
 
-**TODO: kigyűjteni a linkeket**
+**TODO: forrás áttekinthetőbb legyen**
 [imgproc modul]:
 [highgui modul]:
